@@ -115,6 +115,7 @@
   <!-- Modal -->
   <div
     id="productModal"
+    ref="productModal"
     class="modal fade"
     tabindex="-1"
     aria-labelledby="productModalLabel"
