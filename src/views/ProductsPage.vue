@@ -115,7 +115,6 @@
   <!-- Modal -->
   <div
     id="productModal"
-    ref="productModal"
     class="modal fade"
     tabindex="-1"
     aria-labelledby="productModalLabel"
@@ -149,16 +148,17 @@
                 <img class="img-fluid" :src="tempProduct.imageUrl" />
               </div>
               <h3 class="mb-3">多圖新增</h3>
+              <!-- 我多圖陣列裡有東西才顯示(有按新增圖片) -->
               <div v-if="Array.isArray(tempProduct.imagesUrl)">
                 <div
                   class="mb-1"
-                  v-for="(image, key) in tempProduct.imagesUrl"
-                  :key="key"
+                  v-for="(image, index) in tempProduct.imagesUrl"
+                  :key="index"
                 >
                   <div class="mb-3">
                     <label for="imageUrl" class="form-label">圖片網址</label>
                     <input
-                      v-model="tempProduct.imagesUrl[key]"
+                      v-model="tempProduct.imagesUrl[index]"
                       type="text"
                       class="form-control"
                       placeholder="請輸入圖片連結"
@@ -166,12 +166,14 @@
                   </div>
                   <img class="img-fluid" :src="image" />
                 </div>
+                <!-- 新增刪除會一直在最下面，不是每個圖各別控制，要刪只會刪最後一筆 -->
                 <div
                   v-if="
                     !tempProduct.imagesUrl.length ||
                     tempProduct.imagesUrl[tempProduct.imagesUrl.length - 1]
                   "
                 >
+                  <div>{{ tempProduct.imagesUrl.length }}</div>
                   <button
                     class="btn btn-outline-primary btn-sm d-block w-100"
                     @click="tempProduct.imagesUrl.push('')"
@@ -180,6 +182,7 @@
                   </button>
                 </div>
                 <div v-else>
+                  <!-- 因為有推空的，所以沒資料時也是要刪掉 -->
                   <button
                     class="btn btn-outline-danger btn-sm d-block w-100"
                     @click="tempProduct.imagesUrl.pop()"
@@ -197,6 +200,7 @@
                 </button>
               </div>
             </div>
+
             <div class="col-sm-8">
               <div class="mb-3">
                 <label for="title" class="form-label">標題</label>
@@ -387,7 +391,7 @@ onMounted(() => {
   axios.defaults.headers.common.Authorization = token;
 
   checkIsLogin();
-
+  //把modal實例化
   productModal.value = new Modal(document.getElementById("productModal"), {
     keyboard: false,
   });
@@ -406,6 +410,7 @@ const checkIsLogin = () => {
       router.push("/");
     });
 };
+
 //取得產品資料
 const getData = () => {
   isLogin.value = true;
@@ -422,6 +427,7 @@ const getData = () => {
       alert(err.response.data.message);
     });
 };
+
 //選擇產品
 const choseProduct = (item) => {
   tempProduct.value = item;
@@ -429,10 +435,46 @@ const choseProduct = (item) => {
 
 //開彈窗
 const openModal = (isNew, item) => {
-  console.log(productModal.value);
   productModal.value.show();
 
+  if (isNew === "new") {
+    tempProduct.value = {
+      imagesUrl: [],
+    };
+    isAdd.value = true;
+    productModal.value.show();
+  } 
+  //TODO bin 編輯(用新增的就可)&刪除彈窗
+};
 
+const createImages = () => {
+  tempProduct.value.imagesUrl = [];
+  //推一筆空的 Array.isArray為true 也讓之後的v-modal直接把他替換掉 用index去看要換哪筆(邏輯上是會照順序)
+  tempProduct.value.imagesUrl.push("");
+};
+
+//新增or編輯
+const updateProduct = () => {
+  //新增
+  let url = `https://vue3-course-api.hexschool.io/v2/api/${apiPath}/admin/product`;
+  let http = "post";
+  //編輯
+  if (!isAdd.value) {
+    url = `https://vue3-course-api.hexschool.io/v2/api/${apiPath}/admin/product/${tempProduct.value.id}`;
+    http = "put";
+  }
+
+  axios[http](url, { data: tempProduct.value })
+    .then((response) => {
+      alert(response.data.message);
+      //新增成功關彈窗
+      productModal.value.hide();
+      //重拿一次資料 也能直接推到原本資料裡面可以少打一次api
+      getData();
+    })
+    .catch((err) => {
+      alert(err.response.data.message);
+    });
 };
 </script>
 
