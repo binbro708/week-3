@@ -53,14 +53,14 @@
                     <button
                       type="button"
                       class="btn btn-outline-primary btn-sm"
-                      @click="openModal('edit', item)"
+                      @click="openModal('edit', product)"
                     >
                       編輯
                     </button>
                     <button
                       type="button"
                       class="btn btn-outline-danger btn-sm"
-                      @click="openModal('delete', item)"
+                      @click="openModal('delete', product)"
                     >
                       刪除
                     </button>
@@ -319,7 +319,6 @@
   </div>
   <div
     id="delProductModal"
-    ref="delProductModal"
     class="modal fade"
     tabindex="-1"
     aria-labelledby="delProductModalLabel"
@@ -379,7 +378,7 @@ const tempProduct = ref({
 });
 
 const productModal = ref(null);
-
+const delProductModal = ref(null);
 onMounted(() => {
   isLogin.value = true;
 
@@ -395,6 +394,13 @@ onMounted(() => {
   productModal.value = new Modal(document.getElementById("productModal"), {
     keyboard: false,
   });
+
+  delProductModal.value = new Modal(
+    document.getElementById("delProductModal"),
+    {
+      keyboard: false,
+    }
+  );
 });
 
 //確認login狀態
@@ -429,22 +435,22 @@ const getData = () => {
 };
 
 //選擇產品
-const choseProduct = (item) => {
-  tempProduct.value = item;
+const choseProduct = (product) => {
+  tempProduct.value = product;
 };
 
 //開彈窗
-const openModal = (isNew, item) => {
-  productModal.value.show();
-
+const openModal = (isNew, product) => {
   if (isNew === "new") {
     tempProduct.value = {
       imagesUrl: [],
     };
     isAdd.value = true;
     productModal.value.show();
-  } 
-  //TODO bin 編輯(用新增的就可)&刪除彈窗
+  } else if (isNew === "delete") {
+    tempProduct.value = { ...product };
+    delProductModal.value.show();
+  }
 };
 
 const createImages = () => {
@@ -470,6 +476,25 @@ const updateProduct = () => {
       //新增成功關彈窗
       productModal.value.hide();
       //重拿一次資料 也能直接推到原本資料裡面可以少打一次api
+      getData();
+    })
+    .catch((err) => {
+      alert(err.response.data.message);
+    });
+};
+
+//刪除產品
+const delProduct = () => {
+  console.log(tempProduct.value.id);
+
+  const url = `https://vue3-course-api.hexschool.io/v2/api/${apiPath}/admin/product/${tempProduct.value.id}`;
+
+  axios
+    .delete(url)
+    .then((response) => {
+      alert(response.data.message);
+      delProductModal.value.hide();
+      //刪除後一樣要重拿
       getData();
     })
     .catch((err) => {
