@@ -499,6 +499,10 @@ const delProduct = () => {
       delProductModal.value.hide();
       //刪除完一樣重拿
       getData();
+      //刪除後需清空防止留著原本選擇的產品
+      tempProduct.value = {
+        imagesUrl: [],
+      };
     })
     .catch((err) => {
       alert(err.response.data.message);
