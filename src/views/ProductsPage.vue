@@ -173,7 +173,6 @@
                     tempProduct.imagesUrl[tempProduct.imagesUrl.length - 1]
                   "
                 >
-                  <div>{{ tempProduct.imagesUrl.length }}</div>
                   <button
                     class="btn btn-outline-primary btn-sm d-block w-100"
                     @click="tempProduct.imagesUrl.push('')"
