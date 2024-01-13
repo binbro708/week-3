@@ -447,6 +447,10 @@ const openModal = (isNew, product) => {
     };
     isAdd.value = true;
     productModal.value.show();
+  } else if (isNew === "edit") {
+    tempProduct.value = { ...product };
+    isAdd.value = false;
+    productModal.value.show();
   } else if (isNew === "delete") {
     tempProduct.value = { ...product };
     delProductModal.value.show();
@@ -494,7 +498,7 @@ const delProduct = () => {
     .then((response) => {
       alert(response.data.message);
       delProductModal.value.hide();
-      //刪除後一樣要重拿
+      //刪除完一樣重拿
       getData();
     })
     .catch((err) => {
